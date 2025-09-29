@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Study Timetable Responsive</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+
+  :root {
+    /* Uses device safe-area when available; JS will set fallback if not supported */
+    --safe-top: env(safe-area-inset-top, 0px);
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    /* Global top padding to stay clear of Android status bar/notch */
+    padding-top: calc(var(--safe-top) + 12px);
+    background: #e6f0f9;
+    font-family: 'Open Sans', Arial, sans-serif;
+    color: #2c3e50;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-image: url('https://images.pexels.com/photos/23475/pexels-photo.jpg?_gl=1*1at8v8g*_ga*MjA0MjQ0NDIwMC4xNzM2NzE0NDk4*_ga_8JE65Q40S6*czE3NTkwMjE1ODAkbzUkZzAkdDE3NTkwMjE1ODAkajYwJGwwJGgw');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+  }
+
+  h3 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0b0347;
+    margin: calc(var(--safe-top) + 16px) 0 16px; /* push below status bar */
+    text-shadow: 1px 1px 3px rgba(255,255,255,0.8);
+    background-color: #496797;
+  }
+
+  h3 img {
+    height: 40px;
+    margin-right: 10px;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 8px auto 30px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    height: auto;
+    padding: 20px;
+  }
+
+  .left-pane {
+    padding: 10px;
+  }
+
+  .input-row {
+    margin-bottom: 18px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .input-row label {
+    flex: 1 1 150px;
+    min-width: 150px;
+  }
+
+  .input-row input, .input-row button {
+    flex: 2 1 150px;
+    min-width: 150px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #aac4d3;
+    font-size: 15px;
+  }
+
+  .input-row button {
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    transition: background-color 0.25s ease;
+  }
+
+  .input-row button:hover { background-color: #1a2733; }
+
+  #subjectsContainer .subject { margin-bottom: 18px; }
+
+  #subjectsContainer .subject div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+
+  #subjectsContainer label { flex: 1 1 120px; }
+
+  #subjectsContainer input {
+    flex: 2 1 140px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #aac4d3;
+    font-size: 15px;
+  }
+
+  #startButton {
+    margin-top: 10px;
+    padding: 12px;
+    font-weight: 700;
+    background-color: #2c3e50;
+    color: #ecf0f1;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    width: 100%;
+  }
+  #startButton:disabled { background-color: #95a5a6; cursor: not-allowed; }
+
+  #timetable { margin-top: 20px; }
+
+  .task-list {
+    background: #f8fbfe;
+    border-radius: 12px;
+    padding: 18px 24px;
+    margin-bottom: 22px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  .task-list h3 { margin-bottom: 15px; color: #2c3e50; }
+
+  .task-item {
+    background: white;
+    border-radius: 24px;
+    padding: 10px 20px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.10);
+  }
+
+  .task-item.completed {
+    text-decoration: line-through;
+    color: #7f8c8d;
+    background: #e2e9f1;
+  }
+
+  #overallCompletion {
+    font-weight: 800;
+    font-size: 22px;
+    color: #2c3e50;
+    margin: 20px 0 24px;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(255,255,255,0.75);
+  }
+
+  canvas.circle-chart {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 24px;
+    display: block;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  @media screen and (min-width: 601px) {
+    .container {
+      display: flex;
+      height: 600px;
+    }
+    .left-pane {
+      flex: 1 1 0;
+      max-width: 440px;
+      padding: 20px 25px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #e1e7ee;
+    }
+    .right-pane {
+      flex: 1 1 0;
+      max-width: 440px;
+      padding: 20px 25px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #startButton {
+      width: auto;
+      margin-top: 10px;
+      align-self: flex-start;
+    }
+  }
+  footer.app-footer{ background:#496797; color:#ecf0f1; 
+  padding:10px 12px; } 
+  .footer-inner{ width:min(92vw, 900px); 
+  margin:0 auto; display:flex; gap:10px; 
+  flex-wrap:wrap; align-items:center; 
+  justify-content:center; font-size:13px; }
+</style>
+</head>
+<body>
+  <h3>
+    <img src="https://github.com/onemoremohit/Projects-images/blob/main/readylogo.png?raw=true" alt="VMAPS Logo" />
+    <span> Plan Your Day, With GVMAPS!</span>
+  </h3>
+
+  <div class="container">
+    <div class="left-pane">
+      <div class="input-row">
+        <label for="subjectCount">Subjects to study:</label>
+        <input type="number" id="subjectCount" min="1" max="10" placeholder="Number" />
+        <button id="setSubjects">Set</button>
+      </div>
+      <div id="subjectsContainer"></div>
+      <button id="startButton" disabled>Start Timetable</button>
+    </div>
+    <div class="right-pane">
+      <canvas id="completionChart" class="circle-chart" width="320" height="320"></canvas>
+      <div id="overallCompletion"></div>
+      <div id="timetable"></div>
+    </div>
+  </div>
+  <footer class="app-footer"> <div class="footer-inner"> © 2025 GVMAPS -Made by Mohit -All rights reserved </div> </footer>
+
+<script>
+  let subjects = [];
+  const colors = ['#B2DFDB','#C5CAE9','#FFCCBC','#D7CCC8','#F8BBD0','#AED581','#FFAB91','#BA68C8','#7986CB','#4DB6AC'];
+
+  const subjectCountInput = document.getElementById('subjectCount');
+  const setSubjectsBtn = document.getElementById('setSubjects');
+  const startButton = document.getElementById('startButton');
+  const subjectsContainer = document.getElementById('subjectsContainer');
+  const timetableDiv = document.getElementById('timetable');
+  const overallCompletionDiv = document.getElementById('overallCompletion');
+  const completionChart = document.getElementById('completionChart');
+  const ctx = completionChart.getContext('2d');
+
+  // Safe-area fallback for older Android WebViews
+  (function () {
+    const supportsEnv = CSS && CSS.supports && CSS.supports('padding: env(safe-area-inset-top)');
+    if (!supportsEnv) {
+      document.documentElement.style.setProperty('--safe-top', '16px');
+    }
+  })();
+
+  function saveToLocalStorage() {
+    localStorage.setItem('studySubjects', JSON.stringify(subjects));
+  }
+
+  function loadFromLocalStorage() {
+    const saved = localStorage.getItem('studySubjects');
+    if (!saved) return false;
+
+    subjects = JSON.parse(saved);
+    if (!subjects.length) return false;
+
+    subjectCountInput.value = subjects.length;
+    subjectsContainer.innerHTML = '';
+    startButton.disabled = false;
+
+    subjects.forEach((subj, i) => {
+      const div = document.createElement('div');
+      div.classList.add('subject');
+      div.innerHTML = `
+        <h3>Subject ${i + 1}</h3>
+        <div><label for="subjectName${i}">Name:</label><input type="text" id="subjectName${i}" placeholder="Subject name" value="${subj.name}" /></div>
+        <div><label for="topics${i}">Topics:</label><input type="number" id="topics${i}" min="1" max="20" value="${subj.topicsCount}" /></div>
+        <div><label for="practice${i}">Practice hrs:</label><input type="number" id="practice${i}" min="0" max="10" value="${subj.practiceHours}" /></div>
+      `;
+      subjectsContainer.appendChild(div);
+    });
+
+    drawInitialCircle(subjects.length);
+    renderTimetable();
+
+    subjects.forEach((subj, subjIdx) => {
+      const list = timetableDiv.querySelectorAll('.task-list')[subjIdx];
+      if (!list) return;
+      const checks = list.querySelectorAll('input[type=checkbox]');
+      checks.forEach((cb) => {
+        const type = cb.dataset.type;
+        const index = parseInt(cb.dataset.index);
+        if (type === 'topic' && index < subj.completedTopics) {
+          cb.checked = true; cb.parentElement.classList.add('completed');
+        }
+        if (type === 'practice' && index < subj.completedPractice) {
+          cb.checked = true; cb.parentElement.classList.add('completed');
+        }
+      });
+    });
+
+    updateOverallCompletion();
+    drawCompletionCircle();
+    return true;
+  }
+
+  setSubjectsBtn.addEventListener('click', () => {
+    const count = parseInt(subjectCountInput.value);
+    if (!count || count < 1) { alert('Please enter at least 1 subject'); return; }
+    subjects = [];
+    subjectsContainer.innerHTML = '';
+    timetableDiv.innerHTML = '';
+    overallCompletionDiv.textContent = '';
+    clearCanvas();
+    startButton.disabled = false;
+
+    for (let i = 0; i < count; i++) {
+      const div = document.createElement('div');
+      div.classList.add('subject');
+      div.innerHTML = `
+        <h3>Subject ${i + 1}</h3>
+        <div><label for="subjectName${i}">Name:</label><input type="text" id="subjectName${i}" placeholder="Subject name" /></div>
+        <div><label for="topics${i}">Topics:</label><input type="number" id="topics${i}" min="1" max="20" value="1" /></div>
+        <div><label for="practice${i}">Practice hrs:</label><input type="number" id="practice${i}" min="0" max="10" value="0" /></div>
+      `;
+      subjectsContainer.appendChild(div);
+    }
+    drawInitialCircle(count);
+  });
+
+  startButton.addEventListener('click', () => {
+    const count = parseInt(subjectCountInput.value);
+    subjects = [];
+    timetableDiv.innerHTML = '';
+
+    for (let i = 0; i < count; i++) {
+      const name = document.getElementById(`subjectName${i}`).value || `Subject ${i + 1}`;
+      const topicsCount = parseInt(document.getElementById(`topics${i}`).value);
+      const practiceHours = parseInt(document.getElementById(`practice${i}`).value);
+      subjects.push({ name, topicsCount, practiceHours, completedTopics: 0, completedPractice: 0 });
+    }
+    renderTimetable();
+    updateOverallCompletion();
+    drawCompletionCircle();
+    saveToLocalStorage();
+  });
+
+  function clearCanvas() { ctx.clearRect(0, 0, completionChart.width, completionChart.height); }
+
+  function drawInitialCircle(numSubjects) {
+    clearCanvas();
+    const cx = completionChart.width / 2;
+    const cy = completionChart.height / 2;
+    const r = 140;
+    const step = (2 * Math.PI) / numSubjects;
+
+    for (let i = 0; i < numSubjects; i++) {
+      const start = i * step;
+      const end = start + step;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, start, end, false);
+      ctx.closePath();
+      ctx.fillStyle = colors[i % colors.length] + '50';
+      ctx.fill();
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  }
+
+  function drawCompletionCircle() {
+    clearCanvas();
+    const cx = completionChart.width / 2;
+    const cy = completionChart.height / 2;
+    const r = 140;
+    const step = (2 * Math.PI) / subjects.length;
+
+    for (let i = 0; i < subjects.length; i++) {
+      const start = i * step;
+      const end = start + step;
+
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r, start, end, false);
+      ctx.closePath();
+      ctx.fillStyle = colors[i % colors.length] + '50';
+      ctx.fill();
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      const subj = subjects[i];
+      const total = subj.topicsCount + subj.practiceHours;
+      const done = subj.completedTopics + subj.completedPractice;
+      const pct = total ? done / total : 0;
+
+      if (pct > 0) {
+        const endPct = start + step * pct;
+        ctx.beginPath();
+        ctx.strokeStyle = colors[i % colors.length];
+        ctx.lineWidth = 12;
+        ctx.arc(cx, cy, r - 10, start, endPct, false);
+        ctx.stroke();
+
+        const mid = start + (endPct - start) / 2;
+        const tx = cx + (r - 35) * Math.cos(mid);
+        const ty = cy + (r - 35) * Math.sin(mid);
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.font = "bold 16px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(Math.round(pct * 100) + "%", tx, ty);
+      }
+    }
+  }
+
+  function renderTimetable() {
+    timetableDiv.innerHTML = '';
+    subjects.forEach((subj, idx) => {
+      const div = document.createElement('div');
+      div.classList.add('task-list');
+      div.innerHTML = `<h3>${subj.name}</h3>`;
+
+      for (let t = 1; t <= subj.topicsCount; t++) {
+        const label = document.createElement('label');
+        label.classList.add('task-item');
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.dataset.subject = idx;
+        checkbox.dataset.type = 'topic';
+        checkbox.dataset.index = t - 1;
+        checkbox.addEventListener('change', updateProgress);
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(` Topic ${t}`));
+        div.appendChild(label);
+      }
+
+      for (let p = 1; p <= subj.practiceHours; p++) {
+        const label = document.createElement('label');
+        label.classList.add('task-item');
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.dataset.subject = idx;
+        checkbox.dataset.type = 'practice';
+        checkbox.dataset.index = p - 1;
+        checkbox.addEventListener('change', updateProgress);
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(` Practice Hour ${p}`));
+        div.appendChild(label);
+      }
+
+      timetableDiv.appendChild(div);
+    });
+  }
+
+  function updateProgress(e) {
+    const cb = e.target;
+    const i = parseInt(cb.dataset.subject);
+    const type = cb.dataset.type;
+    const checked = cb.checked;
+
+    if (type === 'topic') subjects[i].completedTopics += checked ? 1 : -1;
+    else if (type === 'practice') subjects[i].completedPractice += checked ? 1 : -1;
+
+    drawCompletionCircle();
+    updateOverallCompletion();
+    updateTaskStyle(cb);
+    saveToLocalStorage();
+  }
+
+  function updateTaskStyle(cb) {
+    if (cb.checked) cb.parentElement.classList.add('completed');
+    else cb.parentElement.classList.remove('completed');
+  }
+
+  function updateOverallCompletion() {
+    let total = 0, done = 0;
+    subjects.forEach(s => {
+      total += s.topicsCount + s.practiceHours;
+      done += s.completedTopics + s.completedPractice;
+    });
+    const percent = total ? Math.round((done / total) * 100) : 0;
+    overallCompletionDiv.textContent = `Overall Completion: ${percent}%`;
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const loaded = loadFromLocalStorage();
+    if (!loaded) startButton.disabled = true;
+  });
+
+  // Reset button
+  const resetButton = document.createElement('button');
+  resetButton.textContent = 'Reset Timetable';
+  resetButton.style.marginTop = '10px';
+  resetButton.style.padding = '12px';
+  resetButton.style.backgroundColor = '#c0392b';
+  resetButton.style.color = '#ecf0f1';
+  resetButton.style.border = 'none';
+  resetButton.style.borderRadius = '8px';
+  resetButton.style.cursor = 'pointer';
+  resetButton.addEventListener('click', () => {
+    localStorage.removeItem('studySubjects');
+    location.reload();
+  });
+  startButton.parentNode.appendChild(resetButton);
+</script>
+</body>
+</html>
